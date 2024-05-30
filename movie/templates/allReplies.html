@@ -1,0 +1,106 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+  <div class="ui small comments">
+    <h3 class="ui dividing header">
+      Reviews And Replies
+
+      <div class="visible content">
+        <a href="#" onclick="history.back()" >
+          <i class="angle left icon"></i>
+        </a>
+      </div>
+    </h3>
+
+    <div class="comment">
+      <a class="avatar">
+        <img src="{{review.user.avatar.url}}" />
+      </a>
+
+      <div class="content">
+        <a class="author">{{review.user.user.username}}</a>
+        <div class="metadata">
+          <span class="date">{{review.created}}</span>
+        </div>
+        <div class="text">
+          <p style="text-align: justify;">{{review.body}}</p>
+        </div>
+
+        <form
+          id=""
+          action="{% url 'reply-comment' review.id  %}"
+          method="POST"
+          class="ui form"
+        >
+          <div class="actions">
+            <a id="replyButton-{{review.id}}" class="replyClass">Reply</a>
+
+            <div class="ui fluid action input">
+              {% csrf_token %}
+
+              <input
+                type="text"
+                name="reply-box"
+                placeholder="Add a Reply"
+                id="replyInput-{{review.id}}"
+                style="display: none"
+              />
+              <button
+                type="submit"
+                id="replyIDbutton-{{review.id}}"
+                class="ui primary button"
+                style="display: none"
+              >
+                Add a Review
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {% for reply in allReplies %}
+
+      <div class="comments">
+        <div class="comment">
+          <a class="avatar">
+            <img src="{{reply.user.avatar.url}}" />
+          </a>
+          <div class="content">
+            <a class="author">{{reply.user.user.username}}</a>
+            <div class="metadata">
+              <span class="date">{{reply.created}}</span>
+            </div>
+            <div class="text">{{reply.body}}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock content %} {% block scripts %}
+
+<script>
+  $(document).ready(function () {
+    $(".replyClass").click(function (e) {
+      let btnID = $(this).attr("id");
+      let list = btnID.split("-");
+
+      const repInput = document.getElementById("replyInput" + "-" + list[1]);
+      const replyIDbutton = document.getElementById(
+        "replyIDbutton" + "-" + list[1]
+      );
+
+      if (repInput.style.display === "none") {
+        repInput.style.display = "block";
+        replyIDbutton.style.display = "block";
+      } else {
+        repInput.style.display = "none";
+        replyIDbutton.style.display = "none";
+      }
+    });
+  });
+</script>
+
+{% endblock scripts %}

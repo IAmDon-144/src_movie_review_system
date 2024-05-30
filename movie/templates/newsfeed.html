@@ -1,0 +1,129 @@
+{% extends 'base.html' %} {% block content %}
+
+<style></style>
+
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="card-title">Category <span id="catname"></span></h2>
+      <hr />
+      <div class="allcat">
+        {% for category in allCategory %}
+        <a href="{% url 'category-filter' category.id category.name %}">
+          <img
+            class="rounded-circle catimg"
+            src="{{category.image.url}}"
+            alt="{{category.name}}"
+            height="80px"
+            width="81px"
+            style="
+              border: 1px solid blueviolet;
+
+            "
+        /></a>
+        {% endfor %}
+      </div>
+      <br />
+    </div>
+  </div>
+
+  <div class="row">
+    {% for movie in allMovie %}
+    <div class="container col-md-3">
+      <div class="ui card movie-card mt-3">
+        <a
+          href="{% url 'preview-movie' movie.id movie.title|slugify movie.code %}"
+        >
+          <img src="{{movie.thumbnail.url}}" height="450" width="100%" />
+        </a>
+        <div class="content">
+          <a
+            class="header"
+            href="{% url 'preview-movie' movie.id movie.title|slugify movie.code %}"
+            >{{movie.title}}</a
+          >
+          <div class="meta">
+            <span class="date">{{movie.language}}</span>
+          </div>
+
+          <div class="description">
+            <h3>Total Reviews - {{movie.reviewsCount}}</h3>
+          </div>
+        </div>
+
+        <!-- --------------------like Start ---------------------------->
+
+        <div class="extra content">
+          <form
+            action="{% url 'add-love' %}"
+            class="ui form"
+            enctype="multipart/form-data"
+            method="POST"
+            id="like-form"
+          >
+            {% csrf_token %}
+            <button
+              {%
+              if
+              profile
+              not
+              in
+              movie.liked.all
+              %}
+              class="ui vertical button like-btn"
+              {%
+              else
+              %}
+              class="ui red vertical button like-btn"
+              {%
+              endif
+              %}
+              type="submit"
+              name="like-btn"
+              value="liking-system"
+              id="like-{{movie.id}}-{{profile.id}}"
+              tabindex="1"
+            >
+              <div class="visible content">
+                <i class="like icon"></i>
+              </div>
+            </button>
+
+            <div class="ui vertical button" tabindex="10">
+              <div class="visible content" id="likesCount-{{movie.id}}">
+                {{movie.liked.count}}
+              </div>
+            </div>
+
+            <button class="ui button">
+              <a
+                href="{% url 'preview-movie' movie.id movie.title|slugify movie.code %}"
+                >See Details</a
+              >
+            </button>
+          </form>
+        </div>
+
+        <!-- --------------------like Close ---------------------------->
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  $(".rounded-circle").mouseover(function () {
+    name = $(this).attr("alt");
+    document.getElementById("catname").innerHTML = ":" + name;
+  });
+  $(".rounded-circle").mouseleave(function () {
+    name = $(this).attr("alt");
+    document.getElementById("catname").innerHTML = "";
+  });
+</script>
+
+{% endblock content %} {% block scripts %}
+<script></script>
+
+{% include 'addLove.html' %} {% endblock scripts %}

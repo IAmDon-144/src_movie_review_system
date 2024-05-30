@@ -1,0 +1,31 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+  <h1>Rated</h1>
+  <p>Your Liked Movies Will Appear Here.</p>
+
+  <div class="row">
+    {% for rated in ratedLists %}
+    <div class="container col-md-1" style="width: 12%">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <a
+              href="{% url 'preview-movie' rated.id rated.title|slugify rated.code %}"
+            >
+              <img
+                class="card-img"
+                src="{{rated.thumbnail.url}}"
+                alt="Card image cap"
+                style="height: 200px; width: 110px"
+              />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock content %}

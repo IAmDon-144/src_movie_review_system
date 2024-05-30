@@ -1,0 +1,271 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+  <div class="row">
+    <h1>{{movie.title}} ({{movie.year}})</h1>
+    <hr />
+    <div class="col-md-6">
+      <div class="card">
+        <img src="{{movie.thumbnail.url}}" height="800" width="100%" />
+
+        <div class="card-body">
+          <div class="card-title"></div>
+          <p class="card-text" style="text-align: justify">
+            {{movie.description|safe|urlize}}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <table class="table table-bordered" style="text-align: center">
+        <tbody>
+          <tr>
+            <td><h5>Movie Title</h5></td>
+            <td>{{movie.title}}</td>
+          </tr>
+          <tr>
+            <td><h5>Year</h5></td>
+            <td>{{movie.year}}</td>
+          </tr>
+
+          <tr>
+            <td><h5>Country</h5></td>
+            <td>{{movie.country}}</td>
+          </tr>
+          <tr>
+            <td><h5>Language</h5></td>
+            <td>{{movie.language}}</td>
+          </tr>
+          {% for key,value in extraInfo %}
+          <tr>
+            <td><h5>{{key}}</h5></td>
+            <td>{{value|linebreaks}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="ratio ratio-16x9">
+        <iframe
+          src="https://www.youtube.com/embed/{{movie.video|slice:'16:'}}"
+          title="YouTube video"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <hr />
+
+      <div class="extra content">
+        <!-- --------------------like Start ---------------------------->
+
+        <form
+          action="{% url 'add-love' %}"
+          class="ui form"
+          enctype="multipart/form-data"
+          method="POST"
+          id="like-form"
+        >
+          {% csrf_token %}
+          <button
+            {%
+            if
+            profile
+            not
+            in
+            movie.liked.all
+            %}
+            class="ui red vertical button like-btn"
+            {%
+            else
+            %}
+            class="ui  vertical button like-btn"
+            {%
+            endif
+            %}
+            type="submit"
+            name="like-btn"
+            value="liking-system"
+            id="like-{{movie.id}}-{{profile.id}}"
+            tabindex="1"
+          >
+            <div class="visible content">
+              <i class="like icon"></i>
+            </div>
+          </button>
+
+          <div class="ui vertical button" tabindex="10">
+            <div class="visible content" id="likesCount-{{movie.id}}">
+              {{movie.liked.count}}
+            </div>
+          </div>
+
+          <div class="ui animated button" tabindex="0">
+            <div class="visible content"><i class="home icon"></i></div>
+            <a href="{% url 'home' %}">
+              <div class="hidden content">Home</div>
+            </a>
+          </div>
+
+          <div class="ui animated button" tabindex="0">
+            <div class="visible content">
+              <i class="external alternate icon"></i>
+            </div>
+            <a href="https://en.wikipedia.org/wiki/{{movie.title}}">
+              <div class="hidden content">More</div>
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- --------------------like Close ---------------------------->
+    </div>
+  </div>
+
+  <!----------------------------- Review Start ------------->
+
+  <div>
+    <form
+      id=""
+      action="{% url 'comment-post' movie.id %}"
+      method="POST"
+      class="ui form my-3"
+    >
+      {% csrf_token %}
+      <input
+        placeholder="Fantastic Movie or Worst one ?"
+        class="ui input"
+        id="id_comment-box"
+        type="text"
+        name="commnet-box"
+        style="max-width: 1070px"
+      />
+      {% if profile == "AnonymousUser" %}
+      <a
+        href="{% url 'login-account' %}"
+        type="button"
+        class="ui primary button"
+      >
+        Add Review Publicly
+      </a>
+      {% else %}
+      <button type="submit" name="submit_c_form" class="ui primary button">
+        Add a Review
+      </button>
+      {% endif %}
+    </form>
+  </div>
+
+  <!------------------------- Review End ------------->
+
+  <hr />
+
+  <div class="ui comments">
+    <h3 class="ui dividing header">Reviews({{allReview|length}})</h3>
+
+    {% if allReview|length > 0 %} {% for review in allReview %}
+
+    <div class="comment" id="{{movie.title}}-{{review.id}}">
+      <a class="avatar">
+        <img src="{{review.user.avatar.url}}" />
+      </a>
+      <div class="content">
+        <a class="author">{{review.user.user.username}}</a>
+        <div class="metadata">
+          <span class="date">{{review.created}}</span>
+        </div>
+        <div class="text">
+          <p>
+            {{review.body}} {% if profile == review.user %}
+
+            <a href="{% url 'delete-review' review.id  movie.id %}">
+              <i class="red trash icon"></i>
+            </a>
+
+            {% endif %}
+          </p>
+        </div>
+
+        <!------------------------- Reply Start ------------->
+
+        <form
+          id=""
+          action="{% url 'reply-comment' review.id %}"
+          method="POST"
+          class="ui form"
+        >
+          <div class="actions">
+            <a id="replyButton-{{review.id}}" class="replyClass">Reply</a>
+
+            <a
+              href="{% url 'see-replies' review.id %}"
+              id="replyButton"
+              class="replyCount"
+              >See {{review.repliessCount}} Replies</a
+            >
+
+            <div class="ui fluid action input">
+              {% csrf_token %}
+
+              <input
+                type="text"
+                name="reply-box"
+                placeholder="Add a Reply"
+                id="replyInput-{{review.id}}"
+                style="display: none"
+              />
+
+              <button
+                type="submit"
+                id="replyIDbutton-{{review.id}}"
+                class="ui primary button"
+                style="display: none"
+              >
+                {% if profile == "AnonymousUser" %}
+                <a
+                  href="{% url 'login-account' %}"
+                  style="text-decoration: none"
+                  >Login</a
+                >
+                {% else %} Add a Review {% endif%}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!------------------------- Reply End ------------->
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div>
+      <h3 style="text-align: center">Be the First One to do a Review</h3>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock content %} {% block scripts %}
+
+<script>
+  $(document).ready(function () {
+    document.getElementById("id_comment-box").required = true;
+
+    $(".replyClass").click(function (e) {
+      let btnID = $(this).attr("id");
+      let list = btnID.split("-");
+
+      const repInput = document.getElementById("replyInput" + "-" + list[1]);
+      const replyIDbutton = document.getElementById(
+        "replyIDbutton" + "-" + list[1]
+      );
+
+      if (repInput.style.display === "none") {
+        repInput.style.display = "block";
+        replyIDbutton.style.display = "block";
+      } else {
+        repInput.style.display = "none";
+        replyIDbutton.style.display = "none";
+      }
+    });
+  });
+</script>
+
+{% include 'addLove.html' %} {% endblock scripts %}
